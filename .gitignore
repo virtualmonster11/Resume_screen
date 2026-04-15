@@ -1,0 +1,25 @@
+# Environments
+backend/venv/
+backend/.env
+
+# Node
+frontend/node_modules/
+frontend/dist/
+
+# Mac
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+VENV/
+env.bak/
+venv.bak/
+
+# Project configuration
+.vscode/
