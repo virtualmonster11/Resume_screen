@@ -8,7 +8,7 @@ export default function Register() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState('candidate'); // candidate | recruiter
+  const [role, setRole] = useState('candidate'); // candidate | recruiter | developer
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -49,7 +49,7 @@ export default function Register() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-textMuted mb-2">Account Type</label>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-3">
               <button
                 type="button"
                 onClick={() => setRole('candidate')}
@@ -63,6 +63,13 @@ export default function Register() {
                 className={`py-2 rounded-xl text-sm font-medium border transition-all ${role === 'recruiter' ? 'bg-accent/20 border-accent text-accent' : 'bg-surface border-white/10 text-textMuted'}`}
               >
                 Recruiter
+              </button>
+              <button
+                type="button"
+                onClick={() => setRole('developer')}
+                className={`py-2 rounded-xl text-sm font-medium border transition-all ${role === 'developer' ? 'bg-blue-500/20 border-blue-500 text-blue-400' : 'bg-surface border-white/10 text-textMuted'}`}
+              >
+                Developer
               </button>
             </div>
           </div>

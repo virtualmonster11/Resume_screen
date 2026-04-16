@@ -29,6 +29,11 @@ function Header() {
                   <Link to="/dashboard" className="hover:text-primary-500 transition-colors">Analyzer</Link>
                 </>
               )}
+              {profile?.role === 'developer' && (
+                <>
+                  <Link to="/dashboard" className="hover:text-primary-500 transition-colors">Analyzer</Link>
+                </>
+              )}
               {profile?.role === 'recruiter' && (
                 <>
                   <Link to="/batch-studio" className="text-accent hover:text-accent/80 font-medium transition-colors">Batch Studio</Link>
@@ -64,8 +69,8 @@ function MainLayout() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
-          {/* Protected Routes for Candidate */}
-          <Route element={<ProtectedRoute allowedRoles={['candidate']} />}>
+          {/* Protected Routes for Candidate & Developer */}
+          <Route element={<ProtectedRoute allowedRoles={['candidate', 'developer']} />}>
             <Route path="/dashboard" element={
               <div className="max-w-7xl mx-auto px-6 py-12">
                 <div className="text-center mb-12 animate-slide-up">
