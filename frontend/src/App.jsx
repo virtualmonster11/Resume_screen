@@ -41,8 +41,14 @@ function Header() {
               )}
               <Link to="/history" className="hover:text-primary-500 transition-colors">History</Link>
               <div className="w-px h-4 bg-white/20 mx-2" />
-              <button onClick={signOut} className="flex items-center gap-2 hover:text-red-400 transition-colors">
-                <LogOut className="w-4 h-4" /> Sign Out
+              <button 
+                onClick={async () => {
+                  await signOut();
+                  window.location.href = '/register';
+                }} 
+                className="flex items-center gap-2 hover:text-red-400 text-red-500/80 transition-colors font-bold px-3 py-1 rounded bg-red-500/10"
+              >
+                <LogOut className="w-4 h-4" /> Sign Out & Re-Register
               </button>
             </>
           ) : (
