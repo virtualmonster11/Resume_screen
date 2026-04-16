@@ -1,7 +1,7 @@
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import json
-from services.ai_service import analyze_resume_with_claude
+from services.ai_service import analyze_resume_with_ai
 
 app = FastAPI(title="Resume Match AI API")
 
@@ -22,7 +22,7 @@ async def analyze_resume(resume: UploadFile = File(...), job_description: str = 
         pdf_bytes = await resume.read()
         
         # Call the AI service
-        result = analyze_resume_with_claude(pdf_bytes, job_description)
+        result = analyze_resume_with_ai(pdf_bytes, job_description)
         
         # Ensure it's valid JSON
         if isinstance(result, str):

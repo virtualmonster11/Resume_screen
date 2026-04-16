@@ -1,23 +1,21 @@
-import anthropic
-import base64
+from google import genai
+from google.genai import types
 import json
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
-def analyze_resume_with_claude(pdf_bytes: bytes, job_description: str):
+def analyze_resume_with_ai(pdf_bytes: bytes, job_description: str):
     """
-    Analyzes a PDF resume against a job description using Claude API.
+    Analyzes a PDF resume against a job description using Google GenAI API (Free Tier).
     Returns structured JSON with analysis points.
     """
-    api_key = os.getenv("ANTHROPIC_API_KEY")
+    api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
-        raise ValueError("ANTHROPIC_API_KEY environment variable is missing. Keep the server un-interrupted until key is added.")
+        raise ValueError("GEMINI_API_KEY environment variable is missing. You can get a free one at https://aistudio.google.com/")
 
-    client = anthropic.Anthropic(api_key=api_key)
-    
-    b64_pdf = base64.standard_b64encode(pdf_bytes).decode("utf-8")
+    client = genai.Client(api_key=api_key)
     
     prompt = f"""You are an expert ATS (Applicant Tracking System) and HR professional. 
 Analyze the provided resume against the provided Job Description.
@@ -44,32 +42,20 @@ Return ONLY valid JSON with the following exact structure:
 Do NOT wrap the output in markdown code blocks like ```json. JUST return the raw text representing the valid JSON object.
 """
 
-    message = client.messages.create(
-        model="claude-3-5-sonnet-20241022",
-        max_tokens=2048,
-        temperature=0.2, # Low temp for consistent JSON
-        messages=[{
-            "role": "user",
-            "content": [
-                {
-                    "type": "document", 
-                    "source": {
-                        "type": "base64", 
-                        "media_type": "application/pdf", 
-                        "data": b64_pdf
-                    }
-                },
-                {
-                    "type": "text", 
-                    "text": prompt
-                }
-            ]
-        }]
+    response = client.models.generate_content(
+        model='gemini-2.5-flash',
+        contents=[
+            types.Part.from_bytes(data=pdf_bytes, mime_type='application/pdf'),
+            prompt
+        ],
+        config=types.GenerateContentConfig(
+            temperature=0.2,
+        )
     )
     
-    response_text = message.content[0].text
+    response_text = response.text
     
-    # Simple cleanup in case the model returns markdown codeblocks anyway
+    # Clean up standard json markdown wrappers if the model ignores the prompt
     if response_text.startswith("```json"):
         response_text = response_text[7:]
     if response_text.startswith("```"):

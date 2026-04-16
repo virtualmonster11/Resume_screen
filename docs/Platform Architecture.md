@@ -9,7 +9,7 @@ MatchAI PRO is designed to act as a bridge between candidates and job descriptio
 **Tech Stack:**
 *   **Frontend**: React.js (Vite), Tailwind CSS (Premium Dark Mode), Framer Motion (Animations).
 *   **Backend**: Python, FastAPI.
-*   **AI Engine**: Anthropic Claude API.
+*   **AI Engine**: Google Gemini (via `google-generativeai` Free Tier).
 *   **Cloud (Planned)**: Supabase (Auth + Storage).
 
 ---
@@ -25,7 +25,7 @@ The React app is responsible for the user interface and file handling.
 ### The Backend (`/backend`)
 The backend acts as a secure, fast conduit.
 *   **`main.py`**: A FastAPI application. It is heavily optimized for speed. It accepts the multipar/form-data upload, extracts the PDF bytes, and forwards them to the AI service.
-*   **`services/ai_service.py`**: The "brain" of the platform. It takes the PDF bytes, encodes them in base64, and utilizes Claude's native `document` API. This is infinitely better than pure text extraction because Claude natively understands the layout, bolding, and structure of PDFs. We use a precise JSON-forcing prompt.
+*   **`services/ai_service.py`**: The "brain" of the platform. It takes the PDF bytes and utilizes Gemini's native `document` capability. This is infinitely better than pure text extraction because multimodal models natively understand the layout. We use a precise JSON-forcing prompt.
 
 ---
 
@@ -38,11 +38,11 @@ The backend acts as a secure, fast conduit.
     *   FastAPI receives the PDF in memory.
     *   It passes the raw bytes to the AI service.
 5.  **AI Analysis**:
-    *   Claude reads the PDF directly via Base64.
+    *   Gemini reads the PDF directly via binary processing.
     *   It applies our HR-expert prompt.
     *   It realizes Johndoe has 5 years of React experience but is missing "GraphQL" which was highlighted heavily in the JD.
 6.  **Response Generation**:
-    *   Claude outputs a perfectly structured JSON object giving John a `78%` ATS score, listing `GraphQL` under missing skills, and suggesting he emphasizes his state management expertise in the summary.
+    *   Gemini outputs a perfectly structured JSON object giving John a `78%` ATS score, listing `GraphQL` under missing skills, and suggesting he emphasizes his state management expertise in the summary.
 7.  **Frontend Render**:
     *   The frontend receives the JSON.
     *   `ResultsDisplay` renders the 78% as an animated circular ring.
@@ -57,7 +57,7 @@ Before starting the servers, ensure you complete these steps in your respective 
 ### Step 1: Run the Backend
 1. Open a terminal and navigate to the `backend` folder.
 2. Activate the virtual environment: `source venv/bin/activate`
-3. Set your API Key: `export ANTHROPIC_API_KEY="sk-ant-12345..."`
+3. Set your API Key: `export GEMINI_API_KEY="AIzaSyYourKey..."`
 4. Start the server: `uvicorn main:app --reload`
 *The server will run on `http://localhost:8000`.*
 

@@ -3,9 +3,13 @@ import { useDropzone } from 'react-dropzone';
 import { UploadCloud, FileText, Loader2, Sparkles, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import ResultsDisplay from './ResultsDisplay';
+import { supabase } from '../lib/supabaseClient';
+import { useAuth } from '../context/AuthContext';
 
 export default function ResumeAnalyzer() {
+  const { user } = useAuth();
   const [file, setFile] = useState(null);
+  const [jobName, setJobName] = useState('');
   const [jobDescription, setJobDescription] = useState('');
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState(null);
@@ -49,6 +53,37 @@ export default function ResumeAnalyzer() {
 
       const data = await response.json();
       setResults(data);
+
+      if (user) {
+        let campaignId = null;
+        const finalJobName = jobName.trim() || 'General Analysis';
+        
+        // Create or get Campaign
+        const { data: campaignData } = await supabase
+          .from('job_campaigns')
+          .upsert({ user_id: user.id, job_name: finalJobName, job_description: jobDescription }, { onConflict: 'user_id, job_name' })
+          .select()
+          .single();
+        if (campaignData) campaignId = campaignData.id;
+
+        // Upload PDF to Storage
+        let resumeUrl = null;
+        const filePath = `${user.id}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.\-_]/g, '')}`;
+        const { error: uploadError } = await supabase.storage.from('resumes').upload(filePath, file);
+        if (!uploadError) resumeUrl = filePath;
+
+        // Save to history in background
+        supabase.from('analysis_history').insert([{
+          user_id: user.id,
+          campaign_id: campaignId,
+          resume_url: resumeUrl,
+          candidate_name: file.name,
+          ats_score: data.ats_score,
+          match_level: data.match_level,
+          full_results: data
+        }]).then(({error}) => { if(error) console.error("Failed to save history:", error); });
+      }
+
     } catch (err) {
       console.error(err);
       setError(err.message || "An error occurred during analysis.");
@@ -92,14 +127,23 @@ export default function ResumeAnalyzer() {
 
         {/* JD Column */}
         <div className="space-y-4">
-          <label className="block text-sm font-medium text-textMuted ml-1">2. Paste Job Description</label>
-          <div className="glass-panel rounded-2xl p-1 h-64 flex flex-col">
-            <textarea 
-              value={jobDescription}
-              onChange={(e) => setJobDescription(e.target.value)}
-              className="flex-1 w-full bg-transparent resize-none outline-none p-4 text-sm scrollbar-thin placeholder-textMuted/50"
-              placeholder="Paste the full job description here..."
+          <label className="block text-sm font-medium text-textMuted ml-1">2. Job Name & Description</label>
+          <div className="flex flex-col gap-3">
+            <input 
+              type="text"
+              value={jobName}
+              onChange={(e) => setJobName(e.target.value)}
+              className="w-full bg-surface border border-white/10 rounded-xl px-4 py-3 text-text placeholder-textMuted focus:outline-none focus:border-primary-500"
+              placeholder="Job Title (e.g. Frontend Engineer)"
             />
+            <div className="glass-panel rounded-2xl p-1 h-48 flex flex-col">
+              <textarea 
+                value={jobDescription}
+                onChange={(e) => setJobDescription(e.target.value)}
+                className="flex-1 w-full bg-transparent resize-none outline-none p-4 text-sm scrollbar-thin placeholder-textMuted/50"
+                placeholder="Paste the full job description here..."
+              />
+            </div>
           </div>
         </div>
       </div>
